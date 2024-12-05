@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<StackPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="805.0" prefWidth="959.0" xmlns="http://javafx.com/javafx/22"
+           fx:controller="org.example.networkintrusionmonitor.controller.PacketCaptureController">
+    <VBox prefHeight="805.0" prefWidth="959.0" spacing="15">
+
+        <HBox alignment="CENTER" spacing="10">
+            <Region HBox.hgrow="ALWAYS"/>
+        </HBox>
+
+        <HBox spacing="10">
+            <HBox HBox.hgrow="ALWAYS">
+                <children>
+                    <Label text="Interface: "/>
+                    <ComboBox fx:id="networkInterfacesComboBox" prefWidth="150.0"/>
+                </children>
+            </HBox>
+        </HBox>
+
+    </VBox>
+</StackPane>
