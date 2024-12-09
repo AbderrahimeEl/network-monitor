@@ -14,9 +14,7 @@ public class PacketInfo {
     private String packetType;
     private LocalDateTime timestamp;
     private String rawPacketData;
-    // New field for hex stream
     private String hexStream;
-    // New field for decoded content
     private String decodedContent;
 
     public PacketInfo(String sourceIp, int sourcePort, String destinationIp,
@@ -131,6 +129,41 @@ public class PacketInfo {
 
     public void setDecodedContent(String decodedContent) {
         this.decodedContent = decodedContent;
+    }
+
+    public PacketFeatures getFeatures() {
+        PacketFeatures features = new PacketFeatures();
+        features.setSourceIpNumeric(ipToLong(sourceIp));
+        features.setDestinationIpNumeric(ipToLong(destinationIp));
+        features.setSourcePort(sourcePort);
+        features.setDestinationPort(destinationPort);
+        features.setProtocol(protocolToNumeric(protocol));
+        features.setPacketLength(packetLength);
+        features.setPacketType(1);
+        return features;
+    }
+
+    private long ipToLong(String ipAddress) {
+        String[] octets = ipAddress.split("\\.");
+        long result = 0;
+        for (int i = 0; i < 4; i++) {
+            result <<= 8;
+            result |= Integer.parseInt(octets[i]) & 0xFF;
+        }
+        return result;
+    }
+
+    private int protocolToNumeric(String protocol) {
+        switch (protocol.toUpperCase()) {
+            case "TCP":
+                return 6;
+            case "UDP":
+                return 17;
+            case "ICMP":
+                return 1;
+            default:
+                return 0;
+        }
     }
 
     @Override

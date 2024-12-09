@@ -17,7 +17,26 @@
                     <ComboBox fx:id="networkInterfacesComboBox" prefWidth="150.0"/>
                 </children>
             </HBox>
+            <HBox>
+                <children>
+                    <Button fx:id="startCaptureButton" onAction="#startCapture" text="Start Capture"/>
+                    <Button fx:id="stopCaptureButton" disable="true" onAction="#stopCapture" text="Stop Capture"/>
+                </children>
+            </HBox>
         </HBox>
+
+        <TableView fx:id="packetTableView" prefHeight="405.0" prefWidth="868.0" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="timestampColumn" prefWidth="89.60000228881836" text="Timestamp"/>
+                <TableColumn fx:id="sourceIpColumn" prefWidth="74.39999389648438" text="Source IP"/>
+                <TableColumn fx:id="destIpColumn" prefWidth="103.20002746582031" text="Destination IP"/>
+                <TableColumn fx:id="protocolColumn" prefWidth="70.4000244140625" text="Protocol"/>
+                <TableColumn fx:id="lengthColumn" prefWidth="65.5999755859375" text="Length"/>
+                <TableColumn fx:id="rawPacketDataColumn" prefWidth="160.800048828125" text="Raw Packet Data"/>
+                <TableColumn fx:id="hexStreamColumn" prefWidth="199.199951171875" text="Hex Stream"/>
+                <TableColumn fx:id="decodedContentColumn" prefWidth="150.4000122070313" text="Decoded Content"/>
+            </columns>
+        </TableView>
 
     </VBox>
 </StackPane>
