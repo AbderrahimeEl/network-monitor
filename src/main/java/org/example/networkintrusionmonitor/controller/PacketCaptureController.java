@@ -1,6 +1,7 @@
 package org.example.networkintrusionmonitor.controller;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -19,6 +20,7 @@ import java.util.function.Function;
 public class PacketCaptureController {
     private final Pair<String, NetworkInterfaceInfo> EMPTY_NETWORK_INTERFACE_INFO = new Pair<>(null, null);
     public ComboBox<Pair<String, NetworkInterfaceInfo>> networkInterfacesComboBox;
+    public TextArea packetDetailsArea;
 
     @FXML
     private Button startCaptureButton;
@@ -56,11 +58,21 @@ public class PacketCaptureController {
         protocolColumn.setCellValueFactory(new PropertyValueFactory<>("protocol"));
         lengthColumn.setCellValueFactory(new PropertyValueFactory<>("packetLength"));
         rawPacketDataColumn.setCellValueFactory(new PropertyValueFactory<>("rawPacketData"));
+        rawPacketDataColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getRawPacketData().substring(0, 20) + "[click here to see more details]"));
+
         hexStreamColumn.setCellValueFactory(new PropertyValueFactory<>("hexStream"));
         decodedContentColumn.setCellValueFactory(new PropertyValueFactory<>("decodedContent"));
 
         initSelectInterfaceComboBox();
         setOnClickSelectInterfaceComboBox();
+
+        // Optional: Add listener to show packet details when a row is selected
+        packetTableView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                String text = "Raw packet data: " + newSelection.getRawPacketData();
+                packetDetailsArea.setText(text);
+            }
+        });
     }
 
     private void setOnClickSelectInterfaceComboBox() {
