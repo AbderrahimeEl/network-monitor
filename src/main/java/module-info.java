@@ -7,8 +7,8 @@ module org.example.networkintrusionmonitor {
 
     opens org.example.networkintrusionmonitor to javafx.fxml;
     exports org.example.networkintrusionmonitor;
-    exports org.example.networkintrusionmonitor.controller to javafx.fxml;
     opens org.example.networkintrusionmonitor.controller to javafx.fxml;
     opens org.example.networkintrusionmonitor.model to javafx.base;
     exports org.example.networkintrusionmonitor.model to javafx.base;
+    exports org.example.networkintrusionmonitor.controller;
 }

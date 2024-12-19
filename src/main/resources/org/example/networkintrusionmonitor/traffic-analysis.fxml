@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox
+        xmlns:fx="http://javafx.com/fxml"
+        xmlns="http://javafx.com/javafx"
+        fx:controller="org.example.networkintrusionmonitor.controller.TrafficAnalysisController"
+        prefHeight="400.0" prefWidth="600.0"
+>
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Active Connections Section -->
+    <TitledPane text="Active Connections" expanded="true">
+        <VBox spacing="10">
+            <Label fx:id="activeConnectionsCount" styleClass="stat-label"/>
+            <TableView fx:id="connectionsTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn text="Source IP" fx:id="sourceIpColumn"/>
+                    <TableColumn text="Destination IP" fx:id="destIpColumn"/>
+                    <TableColumn text="Protocol" fx:id="protocolColumn"/>
+                    <TableColumn text="State" fx:id="stateColumn"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </TitledPane>
+
+    <!-- Traffic by IP Section -->
+    <TitledPane text="Traffic by IP" expanded="true">
+        <VBox spacing="10">
+            <TableView fx:id="ipTrafficTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn text="IP Address" fx:id="ipAddressColumn"/>
+                    <TableColumn text="Incoming Packets" fx:id="incomingPacketsColumn"/>
+                    <TableColumn text="Outgoing Packets" fx:id="outgoingPacketsColumn"/>
+                    <TableColumn text="Total Bytes" fx:id="totalBytesColumn"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </TitledPane>
+
+
+    <!-- Global Statistics Section -->
+    <TitledPane text="Global Statistics" expanded="true">
+        <GridPane hgap="10" vgap="10">
+            <Label text="Total Packets:" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+            <Label fx:id="totalPacketsLabel" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+            <Label text="Total Bytes:" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <Label fx:id="totalBytesLabel" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+            <Label text="Average Packet Size:" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+            <Label fx:id="avgPacketSizeLabel" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+            <Label text="Top Protocol:" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+            <Label fx:id="topProtocolLabel" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        </GridPane>
+    </TitledPane>
+</VBox>

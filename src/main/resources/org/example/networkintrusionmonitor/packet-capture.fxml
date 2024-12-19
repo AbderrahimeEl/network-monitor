@@ -40,6 +40,7 @@
 
         <TextArea fx:id="packetDetailsArea" editable="false" prefHeight="197.0" prefWidth="868.0" />
 
+        <Button fx:id="analyzeButton" text="Analyze Traffic" onAction="#analyzeTraffic" />
 
     </VBox>
 </StackPane>

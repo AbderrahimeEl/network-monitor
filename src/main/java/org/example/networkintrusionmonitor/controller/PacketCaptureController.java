@@ -3,24 +3,32 @@ package org.example.networkintrusionmonitor.controller;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.stage.Stage;
 import javafx.util.Pair;
-import org.example.networkintrusionmonitor.model.NetworkInterfaceInfo;
-import org.example.networkintrusionmonitor.model.PacketInfo;
+import org.example.networkintrusionmonitor.model.*;
 import org.example.networkintrusionmonitor.repository.PacketInfoRepository;
 import org.example.networkintrusionmonitor.service.NetworkCaptureService;
 import org.pcap4j.core.PcapNativeException;
 import org.pcap4j.core.Pcaps;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class PacketCaptureController {
     private final Pair<String, NetworkInterfaceInfo> EMPTY_NETWORK_INTERFACE_INFO = new Pair<>(null, null);
     public ComboBox<Pair<String, NetworkInterfaceInfo>> networkInterfacesComboBox;
     public TextArea packetDetailsArea;
+    public Button analyzeButton;
 
     @FXML
     private Button startCaptureButton;
@@ -157,6 +165,97 @@ public class PacketCaptureController {
         alert.setTitle("Error");
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    @FXML
+    public void analyzeTraffic() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/networkintrusionmonitor/traffic-analysis.fxml"));
+            Parent root = loader.load();
+
+            TrafficAnalysisController controller = loader.getController();
+
+            // Calculate statistics
+            TrafficStatistics stats = calculateTrafficStatistics();
+            controller.updateStatistics(stats);
+
+            // Show in a new window
+            Stage stage = new Stage();
+            stage.setTitle("Traffic Analysis");
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private TrafficStatistics calculateTrafficStatistics() {
+        TrafficStatistics stats = new TrafficStatistics();
+
+        // Calculate active connections
+        Map<String, ConnectionInfo> activeConnections = new HashMap<>();
+
+        // Calculate traffic by IP
+        Map<String, IpTrafficInfo> ipTrafficMap = new HashMap<>();
+
+        long totalPackets = 0;
+        long totalBytes = 0;
+        Map<String, Integer> protocolCount = new HashMap<>();
+
+        // Process captured packets
+        for (PacketInfo packet : capturedPackets) {
+            totalPackets++;
+            totalBytes += packet.getPacketLength();
+
+            // Update connections
+            String connectionKey = packet.getSourceIp() + "-" + packet.getDestinationIp();
+            ConnectionInfo connection = activeConnections.computeIfAbsent(
+                    connectionKey,
+                    k -> new ConnectionInfo(packet.getSourceIp(), packet.getDestinationIp(),
+                            packet.getProtocol(), "ACTIVE")
+            );
+            connection.incrementPackets();
+            connection.addBytes(packet.getPacketLength());
+
+            // Update IP traffic statistics
+            updateIpTrafficStats(ipTrafficMap, packet);
+
+            // Update protocol statistics
+            protocolCount.merge(packet.getProtocol(), 1, Integer::sum);
+        }
+
+        // Find top protocol
+        String topProtocol = protocolCount.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse("Unknown");
+
+        // Set statistics
+        stats.setActiveConnectionsCount(activeConnections.size());
+        stats.setConnections(new ArrayList<>(activeConnections.values()));
+        stats.setIpTraffic(new ArrayList<>(ipTrafficMap.values()));
+        stats.setTotalPackets(totalPackets);
+        stats.setTotalBytes(totalBytes);
+        stats.setAveragePacketSize(totalPackets > 0 ? (double) totalBytes / totalPackets : 0);
+        stats.setTopProtocol(topProtocol);
+
+        return stats;
+    }
+
+    private void updateIpTrafficStats(Map<String, IpTrafficInfo> ipTrafficMap, PacketInfo packet) {
+        // Update source IP statistics
+        IpTrafficInfo sourceStats = ipTrafficMap.computeIfAbsent(
+                packet.getSourceIp(),
+                k -> new IpTrafficInfo(packet.getSourceIp())
+        );
+        sourceStats.addOutgoingPacket(packet.getPacketLength());
+
+        // Update destination IP statistics
+        IpTrafficInfo destStats = ipTrafficMap.computeIfAbsent(
+                packet.getDestinationIp(),
+                k -> new IpTrafficInfo(packet.getDestinationIp())
+        );
+        destStats.addIncomingPacket(packet.getPacketLength());
     }
 
     private static class NetworkInterfaceInfoComboCell extends ListCell<Pair<String, NetworkInterfaceInfo>> {
