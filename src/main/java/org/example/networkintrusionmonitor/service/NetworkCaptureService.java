@@ -32,8 +32,7 @@ public class NetworkCaptureService {
         }
 
         // Open the network interface for capturing
-        handle = networkInterface.openLive(
-                65536, // Max capture size
+        handle = networkInterface.openLive(65536, // Max capture size
                 PcapNetworkInterface.PromiscuousMode.PROMISCUOUS, // Promiscuous mode
                 10 // Timeout in milliseconds
         );
@@ -87,18 +86,7 @@ public class NetworkCaptureService {
             String decodedContent = decodeHexToString(hexStream);
 
             // Create PacketInfo object
-            PacketInfo packetInfo = new PacketInfo(
-                    sourceIp,
-                    sourcePort,
-                    destIp,
-                    destPort,
-                    protocol,
-                    packet.length(),
-                    packet.getClass().getSimpleName(),
-                    LocalDateTime.now(),
-                    rawData,
-                    hexStream,
-                    decodedContent);
+            PacketInfo packetInfo = new PacketInfo(sourceIp, sourcePort, destIp, destPort, protocol, packet.length(), packet.getClass().getSimpleName(), LocalDateTime.now(), rawData, hexStream, decodedContent);
 
             // Save to database
             repository.savePacketInfo(packetInfo);
@@ -187,19 +175,17 @@ public class NetworkCaptureService {
     }
 
     public void stopCapture() {
-        isCapturing = false;
-
-        if (handle != null) {
-            try {
-                handle.breakLoop();
-            } catch (NotOpenException e) {
-                System.err.println("Handle is not open, cannot break loop: " + e.getMessage());
+        if (isCapturing) {
+            isCapturing = false;
+            if (handle != null && handle.isOpen()) {
+                try {
+                    handle.breakLoop();
+                } catch (NotOpenException e) {
+                    System.out.println("Handle is not open, cannot break loop: " + e.getMessage());
+                } finally {
+                    handle.close();
+                }
             }
-
-            handle.close();
-        }
-
-        if (executorService != null) {
             executorService.shutdown();
         }
     }
