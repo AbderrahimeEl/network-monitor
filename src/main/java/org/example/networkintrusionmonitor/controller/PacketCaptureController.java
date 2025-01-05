@@ -2,6 +2,7 @@ package org.example.networkintrusionmonitor.controller;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -27,8 +28,11 @@ import java.util.function.Function;
 public class PacketCaptureController {
     private final Pair<String, NetworkInterfaceInfo> EMPTY_NETWORK_INTERFACE_INFO = new Pair<>(null, null);
     public ComboBox<Pair<String, NetworkInterfaceInfo>> networkInterfacesComboBox;
-    public TextArea packetDetailsArea;
     public Button analyzeButton;
+    public TextArea packetRawDataArea;
+    public TextArea hexStreamArea;
+    public TextArea decodedContentArea;
+    public MenuItem activeConnectionsMenuItem;
 
     @FXML
     private Button startCaptureButton;
@@ -36,22 +40,6 @@ public class PacketCaptureController {
     private Button stopCaptureButton;
     @FXML
     private TableView<PacketInfo> packetTableView;
-    @FXML
-    private TableColumn<PacketInfo, String> sourceIpColumn;
-    @FXML
-    private TableColumn<PacketInfo, String> lengthColumn;
-    @FXML
-    private TableColumn<PacketInfo, String> destIpColumn;
-    @FXML
-    private TableColumn<PacketInfo, String> protocolColumn;
-    @FXML
-    private TableColumn<PacketInfo, LocalDateTime> timestampColumn;
-    @FXML
-    private TableColumn<PacketInfo, String> rawPacketDataColumn;
-    @FXML
-    private TableColumn<PacketInfo, String> hexStreamColumn;
-    @FXML
-    private TableColumn<PacketInfo, String> decodedContentColumn;
 
     private NetworkInterfaceInfo networkInterface;
     private NetworkCaptureService captureService;
@@ -60,16 +48,50 @@ public class PacketCaptureController {
 
     @FXML
     public void initialize() {
+        TableColumn<PacketInfo, LocalDateTime> timestampColumn = new TableColumn<>("Timestamp");
+        TableColumn<PacketInfo, String> sourceIpColumn = new TableColumn<>("Source IP");
+        TableColumn<PacketInfo, String> destIpColumn = new TableColumn<>("Destination IP");
+        TableColumn<PacketInfo, String> lengthColumn = new TableColumn<>("Length");
+        TableColumn<PacketInfo, String> protocolColumn = new TableColumn<>("Protocol");
+        TableColumn<PacketInfo, String> rawPacketDataColumn = new TableColumn<>("Raw Packet Data");
+        TableColumn<PacketInfo, String> hexStreamColumn = new TableColumn<>("Hex Stream");
+        TableColumn<PacketInfo, String> decodedContentColumn = new TableColumn<>("Decoded Content");
+
         timestampColumn.setCellValueFactory(new PropertyValueFactory<>("timestamp"));
         sourceIpColumn.setCellValueFactory(new PropertyValueFactory<>("sourceIp"));
         destIpColumn.setCellValueFactory(new PropertyValueFactory<>("destinationIp"));
         protocolColumn.setCellValueFactory(new PropertyValueFactory<>("protocol"));
         lengthColumn.setCellValueFactory(new PropertyValueFactory<>("packetLength"));
-        rawPacketDataColumn.setCellValueFactory(new PropertyValueFactory<>("rawPacketData"));
-        rawPacketDataColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getRawPacketData().substring(0, 20) + "[click here to see more details]"));
+        rawPacketDataColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getRawPacketData().substring(0, 90)));
 
         hexStreamColumn.setCellValueFactory(new PropertyValueFactory<>("hexStream"));
         decodedContentColumn.setCellValueFactory(new PropertyValueFactory<>("decodedContent"));
+
+        packetTableView.getColumns().addAll(
+                timestampColumn,
+                sourceIpColumn,
+                destIpColumn,
+                lengthColumn,
+                protocolColumn,
+                rawPacketDataColumn,
+                hexStreamColumn,
+                decodedContentColumn
+        );
+
+        timestampColumn.setMinWidth(150);
+        timestampColumn.setMaxWidth(150);
+
+        sourceIpColumn.setMinWidth(80);
+        sourceIpColumn.setMaxWidth(80);
+
+        destIpColumn.setMinWidth(100);
+        destIpColumn.setMaxWidth(100);
+
+        lengthColumn.setMinWidth(60);
+        lengthColumn.setMaxWidth(60);
+
+        protocolColumn.setMinWidth(70);
+        protocolColumn.setMaxWidth(70);
 
         initSelectInterfaceComboBox();
         setOnClickSelectInterfaceComboBox();
@@ -77,8 +99,9 @@ public class PacketCaptureController {
         // Optional: Add listener to show packet details when a row is selected
         packetTableView.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
-                String text = "Raw packet data: " + newSelection.getRawPacketData();
-                packetDetailsArea.setText(text);
+                packetRawDataArea.setText(newSelection.getRawPacketData());
+                hexStreamArea.setText(newSelection.getHexStream());
+                decodedContentArea.setText(newSelection.getDecodedContent());
             }
         });
     }
@@ -168,20 +191,67 @@ public class PacketCaptureController {
     }
 
     @FXML
-    public void analyzeTraffic() {
+    public void displayActiveConnections() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/networkintrusionmonitor/traffic-analysis.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/networkintrusionmonitor/active-connections.fxml"));
             Parent root = loader.load();
 
             TrafficAnalysisController controller = loader.getController();
 
             // Calculate statistics
             TrafficStatistics stats = calculateTrafficStatistics();
-            controller.updateStatistics(stats);
+            controller.updateStatistics(stats, AnalysisType.ACTIVE_CONNECTIONS);
 
             // Show in a new window
             Stage stage = new Stage();
             stage.setTitle("Traffic Analysis");
+            stage.setMaximized(true);
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void displayGlobalStatistics() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/networkintrusionmonitor/global-statistics.fxml"));
+            Parent root = loader.load();
+
+            TrafficAnalysisController controller = loader.getController();
+
+            // Calculate statistics
+            TrafficStatistics stats = calculateTrafficStatistics();
+            controller.updateStatistics(stats, AnalysisType.GLOBAL_STATISTICS);
+
+            // Show in a new window
+            Stage stage = new Stage();
+            stage.setTitle("Traffic Analysis");
+            stage.setMaximized(true);
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    public void displayTrafficByIP() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/networkintrusionmonitor/traffic-by-ip.fxml"));
+            Parent root = loader.load();
+
+            TrafficAnalysisController controller = loader.getController();
+
+            // Calculate statistics
+            TrafficStatistics stats = calculateTrafficStatistics();
+            controller.updateStatistics(stats, AnalysisType.TRAFIC_BY_IP);
+
+            // Show in a new window
+            Stage stage = new Stage();
+            stage.setTitle("Traffic Analysis");
+            stage.setMaximized(true);
             stage.setScene(new Scene(root));
             stage.show();
         } catch (IOException e) {
@@ -258,11 +328,33 @@ public class PacketCaptureController {
         destStats.addIncomingPacket(packet.getPacketLength());
     }
 
+    public void displayAllerts(ActionEvent actionEvent) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/networkintrusionmonitor/intrusion-alerts.fxml"));
+            Parent root = loader.load();
+
+            TrafficAnalysisController controller = loader.getController();
+
+            controller.updateStatistics(new TrafficStatistics(), AnalysisType.ALERTS);
+
+            // Show in a new window
+            Stage stage = new Stage();
+            stage.setTitle("Traffic Analysis");
+            stage.setMaximized(true);
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static class NetworkInterfaceInfoComboCell extends ListCell<Pair<String, NetworkInterfaceInfo>> {
         @Override
         protected void updateItem(Pair<String, NetworkInterfaceInfo> pair, boolean bln) {
             super.updateItem(pair, bln);
-            setText(pair != null ? (pair.getValue() != null ? pair.getValue().getName() : "Select a network interface") : null);
+            setText(pair != null ? (pair.getValue() != null ?
+                    pair.getValue().getName() + (pair.getValue().getDescription() != null ? " - " + pair.getValue().getDescription() : "")
+                    : "Select a network interface") : null);
         }
     }
 }

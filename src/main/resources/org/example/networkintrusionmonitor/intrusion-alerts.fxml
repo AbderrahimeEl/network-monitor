@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.VBox?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/22"
+      fx:controller="org.example.networkintrusionmonitor.controller.TrafficAnalysisController">
+
+    <padding>
+        <Insets bottom="20" left="20" right="20" top="20"/>
+    </padding>
+
+    <!-- Global Statistics Section -->
+    <TitledPane collapsible="false" expanded="true" text="Intrusion Alerts">
+        <VBox spacing="10">
+            <Label text="There is no alerts for now. Your network's health is great !"/>
+            <ListView fx:id="alertsList" styleClass="alerts-list" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </TitledPane>
+</VBox>

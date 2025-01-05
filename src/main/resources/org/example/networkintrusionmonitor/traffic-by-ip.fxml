@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.VBox?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/22"
+      fx:controller="org.example.networkintrusionmonitor.controller.TrafficAnalysisController">
+
+    <padding>
+        <Insets bottom="20" left="20" right="20" top="20"/>
+    </padding>
+
+    <!-- Traffic by IP Section -->
+    <TitledPane collapsible="false" expanded="true" text="Traffic by IP">
+        <VBox spacing="10">
+            <TableView fx:id="ipTrafficTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="ipAddressColumn" text="IP Address"/>
+                    <TableColumn fx:id="incomingPacketsColumn" text="Incoming Packets"/>
+                    <TableColumn fx:id="outgoingPacketsColumn" text="Outgoing Packets"/>
+                    <TableColumn fx:id="totalBytesColumn" text="Total Bytes"/>
+                </columns>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+            </TableView>
+        </VBox>
+    </TitledPane>
+
+</VBox>
