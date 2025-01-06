@@ -9,6 +9,12 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.effect.BlurType;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 import org.example.networkintrusionmonitor.model.*;
@@ -53,9 +59,7 @@ public class PacketCaptureController {
         TableColumn<PacketInfo, String> destIpColumn = new TableColumn<>("Destination IP");
         TableColumn<PacketInfo, String> lengthColumn = new TableColumn<>("Length");
         TableColumn<PacketInfo, String> protocolColumn = new TableColumn<>("Protocol");
-        TableColumn<PacketInfo, String> rawPacketDataColumn = new TableColumn<>("Raw Packet Data");
-        TableColumn<PacketInfo, String> hexStreamColumn = new TableColumn<>("Hex Stream");
-        TableColumn<PacketInfo, String> decodedContentColumn = new TableColumn<>("Decoded Content");
+        TableColumn<PacketInfo, String> rawPacketDataColumn = new TableColumn<>("Info");
 
         timestampColumn.setCellValueFactory(new PropertyValueFactory<>("timestamp"));
         sourceIpColumn.setCellValueFactory(new PropertyValueFactory<>("sourceIp"));
@@ -64,18 +68,13 @@ public class PacketCaptureController {
         lengthColumn.setCellValueFactory(new PropertyValueFactory<>("packetLength"));
         rawPacketDataColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getRawPacketData().substring(0, 90)));
 
-        hexStreamColumn.setCellValueFactory(new PropertyValueFactory<>("hexStream"));
-        decodedContentColumn.setCellValueFactory(new PropertyValueFactory<>("decodedContent"));
-
         packetTableView.getColumns().addAll(
                 timestampColumn,
                 sourceIpColumn,
                 destIpColumn,
                 lengthColumn,
                 protocolColumn,
-                rawPacketDataColumn,
-                hexStreamColumn,
-                decodedContentColumn
+                rawPacketDataColumn
         );
 
         timestampColumn.setMinWidth(150);
@@ -104,6 +103,28 @@ public class PacketCaptureController {
                 decodedContentArea.setText(newSelection.getDecodedContent());
             }
         });
+
+        DropShadow dropShadow = new DropShadow(
+                BlurType.ONE_PASS_BOX,
+                Color.color(0.6392, 0.6392, 0.6392, 1.0),
+                10.0,
+                0,
+                0,
+                0
+        );
+
+        stopCaptureButton.setEffect(dropShadow);
+        startCaptureButton.setEffect(dropShadow);
+        startCaptureButton.setTextFill(Color.color(1, 1, 1));
+        startCaptureButton.setBackground(new Background(new BackgroundFill(Color.color(0.4, 0.44, 1, 1.0), new CornerRadii(3.0), null)));
+
+        startCaptureButton.setDisable(true);
+
+        networkInterfacesComboBox.setOnAction(e -> {
+            startCaptureButton.setDisable(networkInterfacesComboBox.getSelectionModel().getSelectedItem() == null
+                    || networkInterfacesComboBox.getSelectionModel().isSelected(0));
+        });
+
     }
 
     private void setOnClickSelectInterfaceComboBox() {
@@ -184,14 +205,25 @@ public class PacketCaptureController {
     }
 
     private void showError(String message) {
+        TextArea textArea = new TextArea(message);
+        textArea.setWrapText(true);
+        textArea.setEditable(false);
+
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");
-        alert.setContentText(message);
+        alert.setHeaderText(null);
+        alert.getDialogPane().setContent(textArea);
+
         alert.showAndWait();
     }
 
     @FXML
     public void displayActiveConnections() {
+        if (capturedPackets == null || capturedPackets.isEmpty()) {
+            showError("No data has been captured for analysis. \nPlease select an interface, press the start button to begin capturing packets, and make sure to press the stop button when you're finished.");
+            return;
+        }
+
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/networkintrusionmonitor/active-connections.fxml"));
             Parent root = loader.load();
@@ -215,6 +247,11 @@ public class PacketCaptureController {
 
     @FXML
     public void displayGlobalStatistics() {
+        if (capturedPackets == null || capturedPackets.isEmpty()) {
+            showError("No data has been captured for analysis. \nPlease select an interface, press the start button to begin capturing packets, and make sure to press the stop button when you're finished.");
+            return;
+        }
+
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/networkintrusionmonitor/global-statistics.fxml"));
             Parent root = loader.load();
@@ -238,6 +275,11 @@ public class PacketCaptureController {
 
     @FXML
     public void displayTrafficByIP() {
+        if (capturedPackets == null || capturedPackets.isEmpty()) {
+            showError("No data has been captured for analysis. \nPlease select an interface, press the start button to begin capturing packets, and make sure to press the stop button when you're finished.");
+            return;
+        }
+
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/networkintrusionmonitor/traffic-by-ip.fxml"));
             Parent root = loader.load();
