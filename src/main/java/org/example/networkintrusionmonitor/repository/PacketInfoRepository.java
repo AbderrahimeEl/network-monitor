@@ -104,4 +104,35 @@ public class PacketInfoRepository {
             e.printStackTrace();
         }
     }
+
+    public List<PacketInfo> getPacketsByProtocol(String protocol) {
+        List<PacketInfo> packets = new ArrayList<>();
+        String sql = "SELECT * FROM packet_info WHERE protocol = ?";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, protocol);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    packets.add(new PacketInfo(
+                            rs.getString("source_ip"),
+                            rs.getInt("source_port"),
+                            rs.getString("destination_ip"),
+                            rs.getInt("destination_port"),
+                            rs.getString("protocol"),
+                            rs.getLong("packet_length"),
+                            rs.getString("packet_type"),
+                            rs.getTimestamp("timestamp").toLocalDateTime(),
+                            rs.getString("raw_packet_data"),
+                            rs.getString("hex_stream"),
+                            rs.getString("decoded_content")));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return packets;
+    }
 }

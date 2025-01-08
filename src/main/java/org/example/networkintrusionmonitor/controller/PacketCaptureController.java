@@ -29,16 +29,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 public class PacketCaptureController {
     private final Pair<String, NetworkInterfaceInfo> EMPTY_NETWORK_INTERFACE_INFO = new Pair<>(null, null);
     public ComboBox<Pair<String, NetworkInterfaceInfo>> networkInterfacesComboBox;
-    public Button analyzeButton;
     public TextArea packetRawDataArea;
     public TextArea hexStreamArea;
     public TextArea decodedContentArea;
     public MenuItem activeConnectionsMenuItem;
+    public TextField protocolSearchField;
 
     @FXML
     private Button startCaptureButton;
@@ -120,11 +119,9 @@ public class PacketCaptureController {
 
         startCaptureButton.setDisable(true);
 
-        networkInterfacesComboBox.setOnAction(e -> {
-            startCaptureButton.setDisable(networkInterfacesComboBox.getSelectionModel().getSelectedItem() == null
-                    || networkInterfacesComboBox.getSelectionModel().isSelected(0));
+        protocolSearchField.textProperty().addListener((observable, oldValue, newValue) -> {
+            searchByProtocol(null);
         });
-
     }
 
     private void setOnClickSelectInterfaceComboBox() {
@@ -135,6 +132,9 @@ public class PacketCaptureController {
             if (selectedInterface != null) {
                 setNetworkInterface(selectedInterface);
             }
+
+            startCaptureButton.setDisable(networkInterfacesComboBox.getSelectionModel().getSelectedItem() == null
+                    || networkInterfacesComboBox.getSelectionModel().isSelected(0));
         });
     }
 
@@ -148,8 +148,6 @@ public class PacketCaptureController {
 
         networkInterfacesComboBox.setCellFactory(x -> new NetworkInterfaceInfoComboCell());
         networkInterfacesComboBox.setButtonCell(new NetworkInterfaceInfoComboCell());
-
-        Function<NetworkInterfaceInfo, Pair<String, NetworkInterfaceInfo>> categoryObjectFunction = category -> new Pair<>(category.getName(), category);
 
         networkInterfacesComboBox.getItems().add(EMPTY_NETWORK_INTERFACE_INFO);
 
@@ -370,7 +368,7 @@ public class PacketCaptureController {
         destStats.addIncomingPacket(packet.getPacketLength());
     }
 
-    public void displayAllerts(ActionEvent actionEvent) {
+    public void displayAlerts(ActionEvent actionEvent) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/example/networkintrusionmonitor/intrusion-alerts.fxml"));
             Parent root = loader.load();
@@ -387,6 +385,32 @@ public class PacketCaptureController {
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void searchByProtocol(ActionEvent actionEvent) {
+        if (repository == null) {
+            repository = new PacketInfoRepository();
+        }
+
+        String protocol = protocolSearchField.getText().trim();
+
+        if (protocol.isEmpty()) {
+            packetTableView.getItems().addAll(repository.getAllPackets());
+            return;
+        }
+
+        try {
+            List<PacketInfo> filteredPackets;
+            filteredPackets = repository.getPacketsByProtocol(protocol);
+
+            Platform.runLater(() -> {
+                packetTableView.getItems().clear();
+                packetTableView.getItems().addAll(filteredPackets);
+            });
+
+        } catch (Exception e) {
+            showError("Error fetching packets: " + e.getMessage());
         }
     }
 

@@ -21,8 +21,8 @@
                 </Menu>
                 <Menu mnemonicParsing="false" text="Intrusion Alerts">
                     <items>
-                        <MenuItem fx:id="displayAlertMenuItem" mnemonicParsing="false"
-                                  onAction="#displayAllerts" text="Display"/>
+                        <MenuItem fx:id="displayAlertMenuItem" mnemonicParsing="false" onAction="#displayAlerts"
+                                  text="Display"/>
                     </items>
                 </Menu>
             </menus>
@@ -52,12 +52,30 @@
                 </HBox>
 
                 <Separator fx:id="separator1"/>
+                <HBox>
+                    <children>
+                        <Label text="Packets : ">
+                            <font>
+                                <Font name="System Bold" size="12.0"/>
+                            </font>
+                            <HBox.margin>
+                                <Insets/>
+                            </HBox.margin>
+                        </Label>
 
-                <Label text="Packets : ">
-                    <font>
-                        <Font name="System Bold" size="12.0"/>
-                    </font>
-                </Label>
+                        <HBox spacing="10" HBox.hgrow="ALWAYS">
+                            <Label text="Filter by Protocol:"/>
+                            <TextField fx:id="protocolSearchField" prefHeight="25.0" prefWidth="344.0"
+                                       promptText="Enter Protocol (e.g., TCP)"/>
+                            <HBox.margin>
+                                <Insets/>
+                            </HBox.margin>
+                            <padding>
+                                <Insets left="13.0"/>
+                            </padding>
+                        </HBox>
+                    </children>
+                </HBox>
                 <TableView fx:id="packetTableView" prefHeight="405.0" prefWidth="868.0">
                     <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
