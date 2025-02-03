@@ -10,6 +10,18 @@ This project focuses on building an application to monitor network traffic, dete
 - **Intrusion Detection**: Identification of suspicious patterns such as DoS attacks and unauthorized access.
 - **User-friendly Interface**: Intuitive dashboard for visualizing network statistics and alerts.
 - **Error Handling & Notifications**: Ensures smooth application operation and informs users of critical issues.
+- **AI-Powered Intrusion Detection (WIP)**: Our machine learning model, built with TensorFlow and Keras, is fully developed and ready. We are working on integrating it into the system to enhance detection capabilities. https://github.com/youssef-faik/network-monitor-intrusion-model
+
+## Features  
+- **Real-time Network Monitoring**: Continuous capture and analysis of network traffic.  
+- **Packet Inspection**: Extraction of key packet details (IP addresses, protocol types, payload analysis).  
+- **Traffic Statistics**: Aggregated metrics on network activity.  
+- **Intrusion Detection**: Identification of suspicious patterns such as DoS attacks and unauthorized access.  
+- **User-friendly Interface**: Intuitive dashboard for visualizing network statistics and alerts.  
+- **Error Handling & Notifications**: Ensures smooth application operation and informs users of critical issues.  
+- **AI-Powered Intrusion Detection (WIP)**: Integration of a machine learning model to enhance intrusion detection capabilities. [GitHub Repository](https://github.com/youssef-faik/network-monitor-intrusion-model)  
+
+Let me know if you want any modifications! 🚀
 
 ## Technologies Used
 - **Programming Language**: Java
